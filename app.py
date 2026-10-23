@@ -7,7 +7,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024
 PROFILE = 'ga5-mailroom-action-gate/v2'
-DB_PATH = os.getenv('DATABASE_PATH', '/var/data/mailroom.sqlite3')
+DB_PATH = os.getenv('DATABASE_PATH', '/tmp/mailroom.sqlite3')
 if not os.path.isdir(os.path.dirname(DB_PATH) or '.'):
     os.makedirs(os.path.dirname(DB_PATH) or '.', exist_ok=True)
 

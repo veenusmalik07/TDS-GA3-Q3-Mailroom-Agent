@@ -210,7 +210,7 @@ def propose(body):
         except requests.RequestException as e:
             c.rollback(); return error('Model provider request failed: '+str(e),503)
         except Exception as e:
-            c.rollback(); return error('Could not safely produce proposals: '+str(e),422)
+            c.rollback(); return error('Could not safely produce proposals: '+type(e).__name__+': '+str(e),422)
     return Response(response_json,status=200,mimetype='application/json')
 
 def commit(body):

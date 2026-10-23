@@ -81,7 +81,8 @@ Never send or claim a message was sent. send_approved_notice is only a proposal 
         {'role':'user','content':canonical({'dossiers': dossiers, 'required_output_shape': {'proposals':[{'dossierId':'','action':'','target':None,'payload':{},'evidence':[]}]}})}
     ], 'max_tokens': max(2000, min(12000, len(dossiers)*180))}
     r = requests.post(base + '/chat/completions', headers={'Authorization':'Bearer '+key,'Content-Type':'application/json'}, json=payload, timeout=(5, 42))
-    r.raise_for_status()
+    if not r.ok:
+        raise RuntimeError(f"OpenAI API HTTP {r.status_code}: {r.text[:500]}")
     content = r.json()['choices'][0]['message']['content']
     parsed = json.loads(content)
     arr = parsed.get('proposals') if isinstance(parsed, dict) else None
@@ -208,7 +209,9 @@ def propose(body):
             for p in proposals:
                 c.execute('INSERT INTO proposals VALUES(?,?,?,?,?,?)',(eid,p['dossierId'],p['callId'],p['action'],p['proposalDigest'],canonical(p)))
         except requests.RequestException as e:
-            c.rollback(); return error('Model provider request failed: '+str(e),503)
+            c.rollback()
+            print("MODEL PROVIDER ERROR:", repr(e), flush=True)
+            return error('Model provider request failed',503)
         except Exception as e:
             c.rollback(); return error('Could not safely produce proposals: '+type(e).__name__+': '+str(e),422)
     return Response(response_json,status=200,mimetype='application/json')
